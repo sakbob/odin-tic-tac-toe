@@ -1,0 +1,61 @@
+:root {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --color-background: #334155;
+    --color-container: #1f2937;
+    --color-square: #e11d48;
+    --color-text: #fafafa;
+}
+
+html,
+body {
+    background-color: var(--color-background);
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.square-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+
+    background-color: var(--color-container);
+    width: 55rem;
+    height: 55rem;
+    padding: 1rem;
+
+    box-sizing: border-box;
+}
+
+.square {
+    box-sizing: border-box;
+    background-color: var(--color-square);
+    color: var(--color-text);
+
+    width: 17rem;
+    height: 17rem;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.square:hover {
+    box-sizing: border-box;
+    background-color: #10b981;
+    color: black;
+    border: 1rem solid black;
+}
+
+.heading {
+    font-size: 15rem;
+    font-weight: bold;
+}
