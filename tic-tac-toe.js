@@ -17,7 +17,7 @@ const Gameboard = (function() {
         [1, 4, 7],
         [2, 5, 8],
         
-        // Diagonal
+        // Diagonals
         [0, 4, 8],
         [6, 4, 2]
     ];
@@ -25,18 +25,15 @@ const Gameboard = (function() {
     let winnerID = 0;
 
     return {
-        // Returns gameboard array.
         getGameboard() {
             return board;
         },
 
-        // Resets gameboard array.
         resetGameboard() {
             board.fill(0);
             winnerID = 0;
         },
 
-        // Updates gameboard array given an index and value
         updateGameboard(index, value) {
             if (index < 0 || index >= board.length) {
                 console.error("Error! Index is invalid, cannot updateGameboard!");
@@ -46,9 +43,7 @@ const Gameboard = (function() {
             board[index] = value;
         },
 
-        // Checks if there is a winner
         hasWinner() {
-            // Check for winner by comparing indices of the array to the win conditions.
             for (let i = 0; i < boardWin.length; i++) {
                 if (board[boardWin[i][0]] !== 0 && 
                     board[boardWin[i][0]] === board[boardWin[i][1]] && 
@@ -58,77 +53,103 @@ const Gameboard = (function() {
                     return true;
                 }
             }
-
             return false;
         },
 
-        // Gets the ID of the person who won (0 = none, 1 = playerOne, 2 = playerTwo).
         getWinnerID() {
             return winnerID;
         },
 
-        // Returns null if invalid index, false if index is occupied, true if unoccupied.
         isOccupied(index) {
             if (index < 0 || index >= board.length) {
-                console.error("Error! Index is invalid, cannot updateGameboard!");
+                console.error("Error! Index is invalid, cannot check occupancy!");
                 return null;
             }
-
-            if (board[index] === 0) {
-                return false;
-            }
-
-            return true;
+            return board[index] !== 0;
         },
 
-        // Returns true if grid is empty, false otherwise.
         isEmpty() {
             return board.every((square) => square === 0);
         }
     };
 })();
 
-const Game = function() {
-    const playerOne = 1;
-    const playerTwo = 2;
+const Game = (function() {
     let playerTurn = 1;
+    let counter = 1;
+    let gameInProgress = false;
 
-    // Listen for any pressed squares.
-    const squareHeading = querySelectorAll(".square-heading");
-    squareHeading.forEach(heading => {
-        heading.addEventListener("click", () => {
-            // Get the id of the square and only get the square number.
-            let idName = heading.id;
-            idName.replace("square-heading-","");
+    const gameText = document.querySelector(".text-heading");
 
-            // Check if square has already been pressed.
-            if (isOccupied(Number(idName))) {
-                return;
-            }
-
-            // Update Gameboard with the proper square that is pressed.
-            Gameboard.updateGameboard(Number(idName), playerTurn);
-            
-            // Increment or decrement playerTurn.
-            playerTurn === 1? playerTurn++ : playerTurn--;
-        });
-    });
-}
-
-
-const butStart = document.querySelector(".button-start");
-const butReset = document.querySelector(".button-reset");
-
-let gameInProgress = 0;
-
-butStart.addEventListener("click", () => {
-    if (gameInProgress !== 0) {
-        Game();
-        gameInProgress = 1;
+    function updateGameText(text) {
+        gameText.textContent = text;
     }
-});
 
-butReset.addEventListener("click", () => {
-    Gameboard.resetGameboard();
-    gameInProgress = 0;
-});
+    function handleSquareClick(event) {
+        if (!gameInProgress) {
+            return;
+        }
+
+        const h1 = event.target.querySelector("h1");
+        let idName = h1.id.replace("square-heading-", "");
+
+        if (Gameboard.isOccupied(Number(idName))) {
+            return;
+        }
+
+        Gameboard.updateGameboard(Number(idName), playerTurn);
+        h1.textContent = playerTurn === 1 ? "X" : "O";
+        updateGameText(`Player ${playerTurn === 1 ? 2 : 1}'s turn`);
+
+        if (Gameboard.hasWinner()) {
+            updateGameText(`Player ${Gameboard.getWinnerID()} has won!`);
+            gameInProgress = false;
+            return;
+        }
+
+        counter++;
+        if (counter === 10) {
+            updateGameText("It's a Tie!");
+            gameInProgress = false;
+            return;
+        }
+
+        playerTurn = playerTurn === 1 ? 2 : 1;
+    }
+
+    function startGame() {
+        resetGame();
+        playerTurn = 1;
+        counter = 1;
+        gameInProgress = true;
+        updateGameText("Player 1's turn");
+    }
+
+    function resetGame() {
+        Gameboard.resetGameboard();
+        gameInProgress = false;
+
+        document.querySelectorAll(".square-heading").forEach(heading => {
+            heading.textContent = "";
+        });
+
+        updateGameText("Click Start!");
+    }
+
+    document.querySelector(".square-container").addEventListener("click", event => {
+        if (event.target.closest(".square")) {
+            handleSquareClick(event);
+        }
+    });
+
+    document.querySelector(".button-start").addEventListener("click", startGame);
+    document.querySelector(".button-reset").addEventListener("click", resetGame);
+
+    return {
+        startGame,
+        resetGame
+    };
+})();
+
+// Initial state
+document.querySelector(".text-heading").textContent = "Welcome to the Game!";
