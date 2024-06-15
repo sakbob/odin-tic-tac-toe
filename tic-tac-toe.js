@@ -33,6 +33,7 @@ const Gameboard = (function() {
         // Resets gameboard array.
         resetGameboard() {
             board.fill(0);
+            winnerID = 0;
         },
 
         // Updates gameboard array given an index and value
@@ -46,7 +47,7 @@ const Gameboard = (function() {
         },
 
         // Checks if there is a winner
-        checkWinner() {
+        hasWinner() {
             // Check for winner by comparing indices of the array to the win conditions.
             for (let i = 0; i < boardWin.length; i++) {
                 if (board[boardWin[i][0]] !== 0 && 
@@ -67,7 +68,7 @@ const Gameboard = (function() {
         },
 
         // Returns null if invalid index, false if index is occupied, true if unoccupied.
-        checkOccupied(index) {
+        isOccupied(index) {
             if (index < 0 || index >= board.length) {
                 console.error("Error! Index is invalid, cannot updateGameboard!");
                 return null;
@@ -78,10 +79,56 @@ const Gameboard = (function() {
             }
 
             return true;
+        },
+
+        // Returns true if grid is empty, false otherwise.
+        isEmpty() {
+            return board.every((square) => square === 0);
         }
     };
 })();
 
-const Game = (function() {
+const Game = function() {
+    const playerOne = 1;
+    const playerTwo = 2;
+    let playerTurn = 1;
 
-})();
+    // Listen for any pressed squares.
+    const squareHeading = querySelectorAll(".square-heading");
+    squareHeading.forEach(heading => {
+        heading.addEventListener("click", () => {
+            // Get the id of the square and only get the square number.
+            let idName = heading.id;
+            idName.replace("square-heading-","");
+
+            // Check if square has already been pressed.
+            if (isOccupied(Number(idName))) {
+                return;
+            }
+
+            // Update Gameboard with the proper square that is pressed.
+            Gameboard.updateGameboard(Number(idName), playerTurn);
+            
+            // Increment or decrement playerTurn.
+            playerTurn === 1? playerTurn++ : playerTurn--;
+        });
+    });
+}
+
+
+const butStart = document.querySelector(".button-start");
+const butReset = document.querySelector(".button-reset");
+
+let gameInProgress = 0;
+
+butStart.addEventListener("click", () => {
+    if (gameInProgress !== 0) {
+        Game();
+        gameInProgress = 1;
+    }
+});
+
+butReset.addEventListener("click", () => {
+    Gameboard.resetGameboard();
+    gameInProgress = 0;
+});
